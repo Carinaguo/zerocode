@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -25,6 +26,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
 
 public class BasicHttpClientTest {
     private BasicHttpClient basicHttpClient;
@@ -56,7 +58,20 @@ public class BasicHttpClientTest {
         String reqBodyAsString = "{\"Name\":\"Larry Pg\",\"Company\":\"Amazon\",\"Title\":\"CEO\"}";
         RequestBuilder requestBuilder = basicHttpClient.createRequestBuilder("/api/v1/founder", "POST", header, reqBodyAsString);
         String nameValuePairString = EntityUtils.toString(requestBuilder.getEntity(), "UTF-8");
-        assertThat(nameValuePairString, is("Company=Amazon&Title=CEO&Name=Larry+Pg"));
+
+        String expected = "Company=Amazon&Title=CEO&Name=Larry+Pg";
+        String[] expectedStrs = expected.split("&");
+
+        String[] actualStrs = nameValuePairString.split("&");
+
+        Arrays.sort(expectedStrs);
+        Arrays.sort(actualStrs);
+
+        assertEquals(expectedStrs.length, actualStrs.length);
+        
+        for (int i = 0; i < expectedStrs.length; i++) {
+            assertEquals(expectedStrs[i], actualStrs[i]);
+        }
     }
 
     @Test
